@@ -4,7 +4,7 @@ WORKDIR /dlrover
 COPY ./ .
 RUN sh scripts/build_wheel.sh
 
-FROM easydl/dlrover-cpu:v3.0.0  as base
+FROM easydl/dlrover-cpu:torch200-py38  as base
 
 WORKDIR /dlrover
 
