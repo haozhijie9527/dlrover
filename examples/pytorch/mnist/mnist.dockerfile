@@ -4,13 +4,16 @@ WORKDIR /dlrover
 COPY ./ .
 RUN sh scripts/build_wheel.sh
 
-FROM easydl/dlrover-train:torch201-cpu-py38  as base
+FROM easydl/dlrover-cpu:v3.0.0  as base
 
 WORKDIR /dlrover
 
 RUN apt-get update && apt-get install -y sudo
+RUN apt-get install inetutils-ping
 
+COPY ./data .
 COPY --from=builder /dlrover/dist/dlrover-*.whl /
-RUN pip install /*.whl --extra-index-url=https://pypi.org/simple && rm -f /*.whl
+RUN pip install Pillow -i https://mirrors.aliyun.com/pypi/simple
+RUN pip install /*.whl --extra-index-url=https://mirrors.aliyun.com/pypi/simple && rm -f /*.whl
 
 COPY ./examples ./examples
