@@ -15,7 +15,7 @@ spec:
           containers:
             - name: main
               # yamllint disable-line rule:line-length
-              image: intell-ai/dlrover-cpu:torch200-mnist
+              image: intell-ai/dlrover-torch-mnist:v1.0.1
               imagePullPolicy: IfNotPresent
               command:
                 - /bin/bash
