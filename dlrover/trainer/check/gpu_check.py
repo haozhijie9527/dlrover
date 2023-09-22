@@ -25,10 +25,33 @@ Note:
 import os
 import subprocess
 import sys
+import pynvml
+from dlrover.python.common.log import default_logger as logger
+
+
+def gpu_check():
+    try:
+        pynvml.nvmlInit()
+    except pynvml.NVMLError as e:
+        logger.error(
+            f"An error occurred while initializing NVIDIA NVML: {e}"
+        )
+        return 201
+    finally:
+        try:
+            pynvml.nvmlShutdown()
+        except Exception as e:
+            logger.warn(
+                f"An unexpected error occurred during NVML shutdown: {e}"
+            )
+    return 0
 
 if __name__ == "__main__":
     file_path = os.path.abspath(sys.argv[0])
     file_dir = os.path.dirname(file_path)
     check_path = os.path.join(file_dir, "gpu_inspector.sh")
     p = subprocess.run(["sh", check_path])
-    os._exit(p.returncode)
+    exit_code = p.returncode
+    if exit_code == 0:
+        exit_code = gpu_check()
+    os._exit(exit_code)
