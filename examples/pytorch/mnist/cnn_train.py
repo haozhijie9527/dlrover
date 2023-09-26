@@ -13,7 +13,7 @@
 
 import argparse
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import torch
 import torch.distributed as dist
@@ -42,7 +42,6 @@ def log_rank0(msg):
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     if local_rank == 0:
         print(msg)
-
 
 class Net(nn.Module):
     def __init__(self):
@@ -159,7 +158,7 @@ def train(args):
             train_loader,
             device,
             args.use_fsdp,
-            args.fixed_batch_size,
+            args.fixed_batch_size
         )
         log_rank0("Test model after epoch {}".format(epoch))
         test(model, device, test_loader)
@@ -173,7 +172,7 @@ def train_epoch(
     train_loader,
     device,
     use_fsdp=False,
-    fixed_batch_size=False,
+    fixed_batch_size=False
 ):
     """
     The global batch size will not change if the number of workers changes.
@@ -199,7 +198,7 @@ def train_epoch(
                     optimizer,
                     train_loader,
                     CHEKPOINT_PATH,
-                    use_fsdp,
+                    use_fsdp
                 )
 
 
@@ -212,6 +211,10 @@ def load_checkpoint(model, optimizer, sampler, ckpt_path, use_fsdp=False):
     model_state_dict = checkpoint.get("model", {})
     model.load_state_dict(model_state_dict)
     optim_state_dict = checkpoint.get("optimizer", {})
+    print("\n********************* Load checkpoint begin {} *************************".format(datetime.now())
+          + "\n<==================Print Modal state dict ===============>\n{}".format(model_state_dict)
+          + "\n<==================Print Sampler state dict ===============>\n{}".format(checkpoint.get("sampler", {}))
+          + "\n********************* Load checkpoint end {} *************************".format(datetime.now()))
     if use_fsdp:
         FSDP.set_state_dict_type(
             model,
@@ -238,7 +241,11 @@ def save_checkpoint(
     rank = dist.get_rank()
     if rank == 0:
         torch.save(checkpoint, ckpt_path)
-
+    # 打印checkpoint信息
+    print(f"\n********************* Save checkpoint begin *************************"
+          + "\n<==================Print Modal state dict ===============>\n{}".format(msd)
+          + "\n<==================Print Sampler state dict ===============>\n{}".format(ssd)
+          + f"\n********************* Save checkpoint end *************************")
 
 def get_model_optim_state(model, optimizer, use_fsdp=False):
     if use_fsdp:
